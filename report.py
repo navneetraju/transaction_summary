@@ -11,6 +11,8 @@ def generate_report(df: pd.DataFrame):
     n_unique_customers_per_day = df.groupby(by=['Date'])[['Card #']].nunique().rename(
         columns={'Card #': 'Number of Unique Customers'})
 
+    average_unique_customers_per_day = round(n_unique_customers_per_day['Number of Unique Customers'].mean(), 1)
+
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output, {'in_memory': True})
     worksheet = workbook.add_worksheet("Summary")
@@ -43,9 +45,13 @@ def generate_report(df: pd.DataFrame):
     worksheet.write(start_row, 1, "Number of Unique Customers", bold_border_format)
 
     # Write each row with a border
+    row_counter = start_row + 1
     for row_num, (date, row) in enumerate(n_unique_customers_per_day.iterrows(), start=start_row + 1):
         worksheet.write(row_num, 0, str(date), border_format)
         worksheet.write(row_num, 1, row['Number of Unique Customers'], border_format)
+
+    worksheet.write(row_counter+1, 0, "Average Number of Unique Customers per Day", bold_border_format)
+    worksheet.write(row_counter+1, 1, average_unique_customers_per_day, bold_border_format)
 
     # --------------------------------------------------------------------
     # 6. Close and save
